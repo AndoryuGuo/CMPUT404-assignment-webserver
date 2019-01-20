@@ -89,15 +89,29 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     sendData = reqHandler.setHeader(status, new_attrs={"Location": modified_path})
                     self.request.sendall(bytes(sendData, "utf-8"))
                     return
+                
+                # To do:
+                #   1. end with / -> send index.html
+                #   2. specified file and end with / -> send file directly without adding index.html
+                #   3. specified file and not end with / -> open and send
+                #   4. no specified file and not end with / -> redirect
+                #   5. 
+                
 
                 #status 200 ok
-                with open(prefix+modified_path, 'r') as f:
-                    if fileFormat == "css":
-                        sendData = reqHandler.setHeader(status, mime_type="text/css")
-                    else:
-                        sendData = reqHandler.setHeader(status)
+                try:
+                    with open(prefix+modified_path, 'r') as f:
+                        sendData = reqHandler.setHeader(status, new_attrs={"Location": modified_path})
+                        self.request.sendall(bytes(sendData, "utf-8"))
+                        if fileFormat == "css":
+                            sendData = reqHandler.setHeader(status, mime_type="text/css")
+                        else:
+                            sendData = reqHandler.setHeader(status)
 
-                    sendData += f.read()
+                        sendData += f.read()
+                except:
+                    sendData = reqHandler.setHeader("404 Not Found")
+                    print('404')
             else:
                 #return 404
                 sendData = reqHandler.setHeader("404 Not Found")
