@@ -53,6 +53,7 @@ class httpHandler:
             path += "index.html"
             return(200, path, None)
         elif fileFormat:
+            print(fileFormat[1])
             return (200, path, fileFormat[1])
         else:
             #redirect
@@ -101,8 +102,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 #status 200 ok
                 try:
                     with open(prefix+modified_path, 'r') as f:
-                        sendData = reqHandler.setHeader(status, new_attrs={"Location": modified_path})
-                        self.request.sendall(bytes(sendData, "utf-8"))
                         if fileFormat == "css":
                             sendData = reqHandler.setHeader(status, mime_type="text/css")
                         else:
@@ -132,4 +131,3 @@ if __name__ == "__main__":
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
     server.serve_forever()
-    print("nonblock")
