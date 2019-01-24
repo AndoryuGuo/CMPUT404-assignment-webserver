@@ -32,7 +32,7 @@ class TestYourWebserver(unittest.TestCase):
         self.assertTrue( req.getcode()  == 200 , "200 OK Not FOUND!")
 
     def test_get_deep(self):
-        url = self.baseurl + "/deep/"
+        url = self.baseurl + "/deep/.."
         req = request.urlopen(url, None, 3)
         self.assertTrue( req.getcode()  == 200 , "200 OK Not FOUND!")
 

@@ -30,9 +30,9 @@ import os
 
 class httpHandler:
     
-    def setHeader(self, status_code, mime_type="text/html; char-set=utf-8", new_attrs={}):
-        attrs = {"Connection": "Keep-Alive",
-            "Content-Type": mime_type
+    def setHeader(self, status_code, mime_type="", new_attrs={}):
+        attrs = {"Connection": "close",
+            "Content-Type": "text/"+mime_type
         }
         attrs.update(new_attrs)
         #probably gonna add content-length
@@ -41,7 +41,7 @@ class httpHandler:
         for k, v in attrs.items():
             header += "{}: {}\r\n".format(k, v)
         
-        return header+'\n'
+        return header+'\r\n'
         
     def pathParser(self, path):
         #check root path
@@ -53,13 +53,27 @@ class httpHandler:
             path += "index.html"
             return(200, path, None)
         elif fileFormat:
-            print(fileFormat[1])
             return (200, path, fileFormat[1])
         else:
             #redirect
             path += '/'
             return (301, path, None)
-            
+
+    def security_check(self, path):
+        safeNum = 0
+        fnames = path.split('/')
+
+        for fname in fnames:
+            if fname == "..":
+                safeNum -= 1  
+            elif fname:
+                safeNum += 1
+
+        if safeNum >= 0:
+            return True
+        
+        return False
+
     def response(self):
         return
         
@@ -69,12 +83,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
         reqHandler = httpHandler()
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        
-        #To do
-        #1. check request header
+
         if not self.data:
             return
-            
+
         httpHeader = re.search(r"(.*)\r\n", self.data.decode('utf-8'))[1]
         method = re.search(r"([A-Za-z]+)\s", httpHeader)[1]
         
@@ -83,29 +95,22 @@ class MyWebServer(socketserver.BaseRequestHandler):
             #check if path exists
             print(path)
             prefix= "www"
-            if os.path.exists(prefix+path):
+            if os.path.exists(prefix+path) and reqHandler.security_check(path):
                 status, modified_path, fileFormat = reqHandler.pathParser(path)
                 print("modPath: {}".format(modified_path))
                 if status == 301:
                     sendData = reqHandler.setHeader(status, new_attrs={"Location": modified_path})
                     self.request.sendall(bytes(sendData, "utf-8"))
+                    print("redirect")
                     return
-                
-                # To do:
-                #   1. end with / -> send index.html
-                #   2. specified file and end with / -> send file directly without adding index.html
-                #   3. specified file and not end with / -> open and send
-                #   4. no specified file and not end with / -> redirect
-                #   5. 
-                
 
                 #status 200 ok
                 try:
                     with open(prefix+modified_path, 'r') as f:
                         if fileFormat == "css":
-                            sendData = reqHandler.setHeader(status, mime_type="text/css")
+                            sendData = reqHandler.setHeader(status, mime_type="css")
                         else:
-                            sendData = reqHandler.setHeader(status)
+                            sendData = reqHandler.setHeader(status, mime_type="html")
 
                         sendData += f.read()
                 except:
