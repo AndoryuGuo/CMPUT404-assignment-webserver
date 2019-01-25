@@ -89,8 +89,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
             path = re.search(r"(/.*)\sHTTP", httpHeader)[1]
             #check if path exists
             print(path)
-            prefix= "www"
-            if os.path.exists(prefix+path) and reqHandler.security_check(path):
+            path = "www" + path
+            if os.path.exists(path) and reqHandler.security_check(path):
                 status, modified_path, fileFormat = reqHandler.pathParser(path)
                 print("modPath: {}".format(modified_path))
                 if status == 301:
