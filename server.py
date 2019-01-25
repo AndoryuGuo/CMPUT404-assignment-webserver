@@ -30,9 +30,9 @@ import os
 
 class httpHandler:
     
-    def setHeader(self, status_code, mime_type="", new_attrs={}):
+    def setHeader(self, status_code, mime_type="html", new_attrs={}):
         attrs = {"Connection": "close",
-            "Content-Type": "text/".format(mime_type)
+            "Content-Type": "text/{}".format(mime_type)
         }
         attrs.update(new_attrs)
         #probably gonna add content-length
@@ -64,7 +64,10 @@ class httpHandler:
         realReqPath = os.path.realpath(path)
         cmPrefix = os.path.commonprefix([realReqPath, realResPath])
 
-        if cmPrefix == realReqPath:
+        print("req: ", realReqPath)
+        print("res: ", realResPath)
+
+        if cmPrefix == realResPath:
             return True
         print("not secure")
         return False
@@ -89,8 +92,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
             path = re.search(r"(/.*)\sHTTP", httpHeader)[1]
             #check if path exists
             print(path)
-            path = "www" + path
-            if os.path.exists(path) and reqHandler.security_check(path):
+            prefix = "www"
+            if os.path.exists(prefix+path) and reqHandler.security_check(prefix+path):
                 status, modified_path, fileFormat = reqHandler.pathParser(path)
                 print("modPath: {}".format(modified_path))
                 if status == 301:
