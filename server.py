@@ -32,7 +32,7 @@ class httpHandler:
     
     def setHeader(self, status_code, mime_type="", new_attrs={}):
         attrs = {"Connection": "close",
-            "Content-Type": "text/"+mime_type
+            "Content-Type": "text/".format(mime_type)
         }
         attrs.update(new_attrs)
         #probably gonna add content-length
@@ -59,19 +59,14 @@ class httpHandler:
             path += '/'
             return (301, path, None)
 
-    def security_check(self, path):
-        safeNum = 0
-        fnames = path.split('/')
+    def security_check(self, path, prefix="www"):
+        realResPath = os.join(os.getcwd(), prefix)
+        realReqPath = os.path.realpath(path)
+        cmPrefix = os.path.commonprefix([realReqPath, realResPath])
 
-        for fname in fnames:
-            if fname == "..":
-                safeNum -= 1  
-            elif fname:
-                safeNum += 1
-
-        if safeNum >= 0:
+        if cmPrefix == realReqPath:
             return True
-        
+        print("not secure")
         return False
 
     def response(self):
