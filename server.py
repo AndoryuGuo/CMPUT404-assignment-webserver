@@ -60,7 +60,7 @@ class httpHandler:
             return (301, path, None)
 
     def security_check(self, path, prefix="www"):
-        realResPath = os.join(os.getcwd(), prefix)
+        realResPath = os.path.join(os.getcwd(), prefix)
         realReqPath = os.path.realpath(path)
         cmPrefix = os.path.commonprefix([realReqPath, realResPath])
 
