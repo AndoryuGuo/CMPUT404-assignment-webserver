@@ -54,7 +54,7 @@ class TestYourWebserver(unittest.TestCase):
 
     def test_get_group(self):
         """ how secure are you? """
-        url = self.baseurl + "/../etc/group"
+        url = self.baseurl + "/../../../../../../../../../../../../etc/group"
         try:
             req = request.urlopen(url, None, 3)
             self.assertTrue( False, "Should have thrown an HTTP Error! [%d]" % req.getcode())
