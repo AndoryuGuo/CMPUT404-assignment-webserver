@@ -45,7 +45,6 @@ class httpHandler:
         
     def pathParser(self, path):
         #check root path
-        print("this is: {}".format(path))
         endWithSlash = re.search(r"/$", path)
         fileFormat = re.search(r"/.*\.([a-zA-Z]+)$", path)
 
@@ -64,12 +63,8 @@ class httpHandler:
         realReqPath = os.path.realpath(path)
         cmPrefix = os.path.commonprefix([realReqPath, realResPath])
 
-        print("req: ", realReqPath)
-        print("res: ", realResPath)
-
         if cmPrefix == realResPath:
             return True
-        print("not secure")
         return False
 
     def response(self):
@@ -91,20 +86,17 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if method == 'GET':
             path = re.search(r"(/.*)\sHTTP", httpHeader)[1]
             #check if path exists
-            print(path)
             prefix = "www"
             if os.path.exists(prefix+path) and reqHandler.security_check(prefix+path):
                 status, modified_path, fileFormat = reqHandler.pathParser(path)
-                print("modPath: {}".format(modified_path))
                 if status == 301:
                     sendData = reqHandler.setHeader(status, new_attrs={"Location": modified_path})
                     self.request.sendall(bytes(sendData, "utf-8"))
-                    print("redirect")
                     return
 
-                #status 200 ok
                 try:
                     with open(prefix+modified_path, 'r') as f:
+                        #status 200 ok
                         if fileFormat == "css":
                             sendData = reqHandler.setHeader(status, mime_type="css")
                         else:
@@ -113,15 +105,12 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         sendData += f.read()
                 except:
                     sendData = reqHandler.setHeader("404 Not Found")
-                    print('404')
             else:
                 #return 404
                 sendData = reqHandler.setHeader("404 Not Found")
-                print('404')
         else:
             #return 403
             sendData = reqHandler.setHeader("405 Method Not Allowed")
-            print("405")
         
         self.request.sendall(bytes(sendData, "utf-8"))
         
